@@ -1,104 +1,248 @@
-# Burp-Suite---Part-1-Proxy-Intercept-Repeater
-Dokumentasi praktik Burp Suite Part 1 - Proxy, Intercept, Repeater, dan koneksi ke sqlmap.
+# Burp Suite - Part 1: Proxy, Intercept, Repeater, and sqlmap Integration
 
-
-# Burp Suite Setup & Interception Guide
-
-## Overview
-
-Dokumentasi lengkap untuk setup Burp Suite di Kali Linux, intercept traffic, manipulasi request dengan Repeater, dan integrasi dengan sqlmap.
+A practical guide to using Burp Suite for intercepting HTTP requests, analyzing web traffic, modifying requests with Repeater, and integrating captured requests with sqlmap for SQL injection testing.
 
 ---
 
-## Tahap 1: Membangun Infrastruktur (Localhost & Docker)
+# Overview
 
-1. **Aktifkan Docker** - Pastikan service Docker berjalan
-2. **Run Your Web** - Jalankan container PHP dan MySQL. Pastikan web bisa diakses via browser di Kali Linux (contoh: `http://localhost:8080`)
+This documentation provides a step-by-step guide to configuring Burp Suite on Kali Linux, intercepting HTTP traffic, analyzing and modifying requests using Repeater, and exporting requests for SQL injection testing with sqlmap.
 
----
-
-## Tahap 2: Konfigurasi "Radar" (Burp Suite)
-
-1. **Buka Burp Suite** - Di menu Kali Linux, klik ikon Burp Suite
-2. **Gunakan "Burp Browser"**:
-   - Buka tab `Proxy` -> `Intercept`
-   - Klik tombol `Open Browser` (browser ini sudah otomatis terhubung ke Burp tanpa setting proxy manual)
+> **Note**
+>
+> This project is intended for educational purposes and should only be used on systems you own or have explicit authorization to test.
 
 ---
 
-## Tahap 3: Menangkap Sinyal (The Capture)
+# Prerequisites
 
-1. Ketik alamat web Docker di Burp Browser: `http://localhost:8080`
-2. Pastikan tombol `Intercept is on` di Burp berwarna biru
-3. Klik apa saja di web kamu, maka Burp akan menangkap data mentah
+Before starting, ensure the following requirements are met:
 
----
-
-## Panduan Intercept
-
-1. **Pilih Project**: Klik `Next` -> `Start Burp` (gunakan Temporary project)
-2. **Masuk ke Proxy**: Klik tab `Proxy` di bagian atas
-3. **Buka Browser Khusus**: Klik tombol `Open Browser` (di sub-tab Intercept)
-4. **Akses Target**: Di browser yang terbuka, ketik `http://localhost:8080`
-5. **Tahan Data**: Pastikan tombol `Intercept is on` menyala. Saat web diakses, loading akan berhenti dan data mentah muncul di Burp
+- Kali Linux installed
+- Burp Suite Community or Professional Edition
+- Docker installed and running
+- PHP & MySQL container configured
+- sqlmap installed
+- A local web application running on Docker
 
 ---
 
-## Fitur Repeater (Manipulasi Data)
+# Step 1: Build the Local Testing Environment
 
-### Mengirim ke Repeater
+1. Start the Docker service.
 
-- Di jendela Burp pada tab Intercept, klik kanan pada kode
-- Pilih `Send to Repeater`
+2. Launch your PHP and MySQL containers.
 
-### Menggunakan Repeater
+3. Verify that your web application is accessible through your browser.
 
-1. Klik tab `Repeater` di bagian atas (sebelah tab Proxy)
-2. Di dalam tab Repeater, lihat ke pojok kiri atas - ada tombol orange/merah `Send`
-3. **Eksperimen**:
-   - Ubah salah satu kata/angka di sisi kiri (Request)
-   - Klik `Send`
-   - Lihat perubahan di sisi kanan (Response)
+Example:
 
-### Struktur Tampilan Repeater
-
-- **Sisi Kiri (Request)** : Data yang dikirim ke web
-- **Sisi Kanan (Response)** : Jawaban dari server
+```
+http://localhost:8080
+```
 
 ---
 
-## Eksperimen Manipulasi User-Agent
+# Step 2: Configure Burp Suite
 
-1. Cari baris `User-Agent: Mozilla/5.0 (X11; Linux x86_64) ...`
-2. Hapus isinya dan ganti, contoh: `User-Agent: FarisGanteng-Agent-007`
-3. Klik tombol `Send`
-4. Lihat Response di kolom kanan
+1. Launch Burp Suite.
 
-> **Catatan**: Server akan mencatat akses dari "FarisGanteng-Agent-007" bukan dari browser Linux biasa.
+2. Create a **Temporary Project**.
+
+3. Click **Next**.
+
+4. Click **Start Burp**.
+
+5. Open:
+
+```
+Proxy → Intercept
+```
+
+6. Click **Open Browser**.
+
+Burp Browser is already configured to communicate with Burp Suite, so no manual proxy configuration is required.
 
 ---
 
-## Integrasi Burp Suite dengan sqlmap
+# Step 3: Capture HTTP Requests
 
-### Kenapa Kombinasi Ini Penting
+1. Open the Burp Browser.
 
-| Fitur | Burp Suite | sqlmap |
-|-------|------------|--------|
-| Fungsi | Kacamata X-ray + manipulasi presisi | Palu godam otomatis |
-| Kelebihan | Tangkap request spesifik, analisis manual | Otomatis deteksi & eksploitasi SQLi |
+2. Navigate to:
 
-### Keunggulan Kombinasi
+```
+http://localhost:8080
+```
 
-1. **Presisi Tinggi**: Tangkap request spesifik di Burp, baru berikan ke sqlmap
-2. **Tembus Pertahanan**: Atur parameter (User-Agent/Cookie) di Burp agar sqlmap lancar
-3. **Analisis Manual**: Lihat langsung respon server untuk validasi celah
+3. Ensure the **Intercept is on** button is enabled.
 
-### Cara Menghubungkan
+4. Browse your web application.
 
-1. **Simpan Request dari Burp**:
-   - Di tab Repeater atau Proxy, klik kanan pada request
-   - Pilih `Copy to file` atau copy seluruh teks request ke editor (simpan sebagai `request.txt`)
+Burp Suite will capture every HTTP request before it reaches the server.
 
-2. **Panggil sqlmap**:
-   ```bash
-   sqlmap -r request.txt --batch --dbs
+---
+
+# Using Intercept
+
+The Intercept feature allows you to inspect every request before it is sent to the server.
+
+You can:
+
+- View HTTP headers
+- View cookies
+- View request parameters
+- Modify submitted values
+- Forward or drop requests
+
+---
+
+# Using Repeater
+
+Repeater is used to resend and modify HTTP requests manually.
+
+## Sending Requests to Repeater
+
+1. Capture a request.
+
+2. Right-click the request.
+
+3. Select:
+
+```
+Send to Repeater
+```
+
+---
+
+## Testing Requests
+
+1. Open the **Repeater** tab.
+
+2. Edit the request on the left panel.
+
+3. Click **Send**.
+
+4. Review the server response on the right panel.
+
+### Request Panel
+
+Contains the HTTP request sent to the server.
+
+### Response Panel
+
+Displays the server's response after processing the request.
+
+---
+
+# User-Agent Manipulation Example
+
+Locate the following header:
+
+```
+User-Agent: Mozilla/5.0 ...
+```
+
+Replace it with:
+
+```
+User-Agent: FarisGanteng-Agent-007
+```
+
+Click **Send**.
+
+Observe how the server processes the modified User-Agent header.
+
+---
+
+# Burp Suite and sqlmap Integration
+
+## Why Combine Burp Suite with sqlmap?
+
+Burp Suite allows manual analysis and precise request modification, while sqlmap automates SQL injection detection and exploitation.
+
+Using both tools together provides greater flexibility and accuracy during security assessments.
+
+| Tool | Primary Function |
+|------|------------------|
+| Burp Suite | Intercept, inspect, and manually modify HTTP requests |
+| sqlmap | Automatically detect and test SQL injection vulnerabilities |
+
+---
+
+# Advantages
+
+- Capture only the requests you want to test.
+- Modify headers, cookies, and parameters before testing.
+- Validate server responses manually.
+- Reduce unnecessary automated scanning.
+
+---
+
+# Exporting Requests
+
+1. Capture a request in Burp Suite.
+
+2. Right-click the request.
+
+3. Select:
+
+```
+Copy to file
+```
+
+or manually copy the full HTTP request into a file named:
+
+```
+request.txt
+```
+
+---
+
+# Running sqlmap
+
+Example:
+
+```bash
+sqlmap -r request.txt --batch --dbs
+```
+
+Explanation:
+
+| Option | Description |
+|---------|-------------|
+| `-r` | Reads the HTTP request from a file |
+| `--batch` | Runs sqlmap without interactive prompts |
+| `--dbs` | Enumerates available databases |
+
+---
+
+# Workflow Summary
+
+1. Start Docker.
+2. Launch the PHP & MySQL application.
+3. Open Burp Suite.
+4. Capture an HTTP request.
+5. Analyze or modify the request using Repeater.
+6. Export the request.
+7. Run sqlmap using the exported request.
+8. Review the results.
+
+---
+
+# Common Issues
+
+| Problem | Solution |
+|---------|----------|
+| No requests captured | Ensure **Intercept is on** and use Burp Browser. |
+| Website cannot be reached | Verify Docker containers are running. |
+| Burp Browser does not load | Restart Burp Suite or create a new temporary project. |
+| sqlmap cannot read the request | Verify that `request.txt` contains the complete HTTP request. |
+
+---
+
+# Conclusion
+
+This project demonstrates the fundamental workflow of Burp Suite for intercepting HTTP traffic, modifying requests with Repeater, and integrating captured requests with sqlmap for SQL injection testing in a local development environment.
+
+It serves as an introductory practice for learning web application security testing using Burp Suite and sqlmap.
